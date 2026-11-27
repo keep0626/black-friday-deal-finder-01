@@ -10,10 +10,21 @@
 //   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 // In the grader, MAKEFUN_OUTPUT_DIR is unset and /output is used instead.
 
-import { cpSync, existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildDossier } from "./vendor/makefun-frontend.ts";
+
+// Relative file paths (with byte sizes) under a directory, depth first.
+function listFiles(dir, base = dir) {
+  const out = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...listFiles(full, base));
+    else if (entry.isFile()) out.push({ rel: full.slice(base.length + 1), bytes: statSync(full).size });
+  }
+  return out.sort((a, b) => (a.rel < b.rel ? -1 : 1));
+}
 
 const repoRoot = fileURLToPath(new URL(".", import.meta.url));
 const outputDir = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
@@ -38,6 +49,31 @@ cpSync(appDir, join(outputDir, "app"), { recursive: true });
 mkdirSync(join(outputDir, "screenshots"), { recursive: true });
 cpSync(shotsDir, join(outputDir, "screenshots"), { recursive: true });
 
+// Post-copy integrity check: the grader reads only what landed in the
+// output directory, so a silent short copy would hand in a broken site.
+// Fail loudly instead of writing a dossier for a partial submission.
+const copiedApp = listFiles(join(outputDir, "app"));
+const sourceApp = listFiles(appDir);
+if (
+  copiedApp.length !== sourceApp.length ||
+  copiedApp.some((f, i) => f.rel !== sourceApp[i].rel || f.bytes !== sourceApp[i].bytes)
+) {
+  throw new Error(
+    `app/ copy mismatch: source has ${sourceApp.length} files, output has ${copiedApp.length}`
+  );
+}
+const copiedShots = listFiles(join(outputDir, "screenshots"));
+for (const shot of copiedShots) {
+  if (shot.bytes > 262144) {
+    throw new Error(`screenshot ${shot.rel} is ${shot.bytes} bytes, over the 256 KiB cap`);
+  }
+}
+
+// data.js is the single source of deals; count them the same way the
+// dossier text will show them, so a truncated or stale copy is caught.
+const dealCount = (readFileSync(join(appDir, "data.js"), "utf8").match(/^\s*id: "/gm) ?? []).length;
+if (dealCount === 0) throw new Error("data.js holds no deals");
+
 // buildDossier walks the output directory and writes the dossier from the
 // files actually handed in, so the dossier always matches the submission.
 const dossier = buildDossier(outputDir, {
@@ -48,7 +84,17 @@ const dossier = buildDossier(outputDir, {
 });
 writeFileSync(join(outputDir, "dossier.json"), dossier);
 
+// Verify the dossier actually written: it must parse, and it must carry
+// every deal (data.js fits whole in the dossier text, so the counts match).
+const dossierText = readFileSync(join(outputDir, "dossier.json"), "utf8");
+const dossierJson = JSON.parse(dossierText);
+const dossierDealCount = (dossierJson.text.match(/^\s*id: "/gm) ?? []).length;
+if (dossierDealCount !== dealCount) {
+  throw new Error(`dossier carries ${dossierDealCount} deals, data.js has ${dealCount}`);
+}
+
 console.log(
-  `DealSleuth handed in: ${appEntries.length} app entries, ` +
-    `${shotNames.length} screenshots, dossier ${dossier.length} bytes.`
+  `DealSleuth handed in: ${copiedApp.length} app files copied, ` +
+    `${copiedShots.length} screenshots (${copiedShots.reduce((n, s) => n + s.bytes, 0)} bytes), ` +
+    `${dealCount} deals, dossier ${dossier.length} bytes.`
 );
