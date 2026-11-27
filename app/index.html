@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DealSleuth — Real Black Friday Deals, Checked Today</title>
+<meta name="description" content="A Black Friday deal finder with real prices checked on 27 Nov 2026 at Amazon, Best Buy, Walmart, Target and Costco — each deal with its store link, sale price, usual price and an honest verdict.">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead-inner">
+    <p class="kicker">Black Friday 2026 &middot; Friday 27 November &middot; Cyber Monday 30 November</p>
+    <h1>DealSleuth</h1>
+    <p class="tagline">Real Black Friday deals, checked today — not last week's prices, not inflated “was” prices.</p>
+    <p class="checked-line" id="checked-line">All prices checked 27 Nov 2026.</p>
+    <dl class="stats" id="stats">
+      <div><dt>Deals checked</dt><dd id="stat-deals">–</dd></div>
+      <div><dt>Stores</dt><dd id="stat-stores">–</dd></div>
+      <div><dt>Average discount</dt><dd id="stat-avg">–</dd></div>
+      <div><dt>Total savings</dt><dd id="stat-saved">–</dd></div>
+    </dl>
+  </div>
+</header>
+
+<main>
+  <section class="picks" aria-labelledby="picks-heading">
+    <h2 id="picks-heading">Today's best bets</h2>
+    <p class="section-note">The three strongest verified deals right now — deepest real cut, best evidence.</p>
+    <ol class="pick-list" id="top-picks"></ol>
+  </section>
+
+  <section class="finder" aria-labelledby="finder-heading">
+    <h2 id="finder-heading">Find a deal</h2>
+    <div class="controls">
+      <label class="search-label">Search
+        <input id="search" type="search" placeholder="Try “airpods”, “TV”, “vacuum”…" autocomplete="off">
+      </label>
+      <label>Store
+        <select id="store-filter">
+          <option value="">All stores</option>
+        </select>
+      </label>
+      <label>Minimum discount
+        <select id="discount-filter">
+          <option value="0">Any discount</option>
+          <option value="20">20% off or more</option>
+          <option value="30">30% off or more</option>
+          <option value="40">40% off or more</option>
+          <option value="50">50% off or more</option>
+        </select>
+      </label>
+      <label>Sort by
+        <select id="sort">
+          <option value="verdict">Best verdict first</option>
+          <option value="discount">Biggest % off</option>
+          <option value="saved">Most dollars saved</option>
+          <option value="price-low">Lowest price</option>
+          <option value="price-high">Highest price</option>
+        </select>
+      </label>
+    </div>
+    <div class="chips" id="category-chips" role="group" aria-label="Filter by category"></div>
+    <p class="result-count" id="result-count" aria-live="polite"></p>
+    <ul class="deal-grid" id="deals"></ul>
+    <p class="empty" id="empty" hidden>No deals match that search. Try a different word, store or discount.</p>
+  </section>
+
+  <section class="method" aria-labelledby="method-heading">
+    <h2 id="method-heading">How we check a deal</h2>
+    <ol>
+      <li><strong>Read the price at the store.</strong> Every deal here comes from the store's own Black Friday release or page, or from a deals source that names the store — never from a guess.</li>
+      <li><strong>Show the “was” price honestly.</strong> Where a store only states the saving, the “was” price is the sale price plus that saving. Where a store published no usual price, the deal is left out.</li>
+      <li><strong>Call it like it is.</strong> <span class="pill pill-new-low">New low</span> means the lowest price the source has ever recorded. <span class="pill pill-strong">Strong deal</span> means 40% off or more on a current model. <span class="pill pill-good">Good deal</span> is a solid 20–39% cut. <span class="pill pill-routine">Routine</span> is a modest 10–19%. <span class="pill pill-modest">Modest</span> is under 10% but still the first cut on the item. <span class="pill pill-skip">Skip</span> means barely a discount at all — we list it so you don't buy it by mistake.</li>
+      <li><strong>Date every check.</strong> Each card says when its price was read and where. Amazon prices move daily: ones reported 20–23 Nov are marked “not re-checked”.</li>
+    </ol>
+    <p class="method-note">Prices can change during the day. Always confirm the price at checkout before you pay. DealSleuth is an independent finder and is not affiliated with Amazon, Best Buy, Walmart, Target, Costco or any brand listed.</p>
+  </section>
+</main>
+
+<footer>
+  <p>DealSleuth · Black Friday 2026 · Prices checked 27 Nov 2026 · Sources: Best Buy Black Friday release (17 Nov), Costco Black Friday page, Nintendo Black Friday page, 9to5Toys Amazon coverage (20–23 Nov), Walmart and Target Black Friday coverage (27 Nov).</p>
+</footer>
+
+<script type="module" src="./main.js"></script>
+</body>
+</html>
